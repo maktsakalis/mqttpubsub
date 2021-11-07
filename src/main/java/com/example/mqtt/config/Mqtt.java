@@ -1,9 +1,6 @@
 package com.example.mqtt.config;
 
-import org.eclipse.paho.client.mqttv3.IMqttClient;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.*;
 
 public class Mqtt {
 
@@ -25,6 +22,8 @@ public class Mqtt {
             options.setAutomaticReconnect(true);
             options.setCleanSession(true);
             options.setConnectionTimeout(10);
+            MqttTopic topic = new MqttTopic("myTopic", null);
+            options.setWill(topic,"Hey guys, I am out!".getBytes(),1,false);
 
             if (!instance.isConnected()) {
                 instance.connect(options);

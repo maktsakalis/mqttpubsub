@@ -6,6 +6,7 @@ import com.example.mqtt.exceptions.MqttException;
 import com.example.mqtt.model.MqttPublishModel;
 
 import com.example.mqtt.model.MqttSubscribeModel;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -41,13 +42,16 @@ public class MqttController {
         List<MqttSubscribeModel> messages = new ArrayList<>();
         CountDownLatch countDownLatch = new CountDownLatch(10);
         Mqtt.getInstance().subscribeWithResponse(topic,
-                (s, mqttMessage) -> {
-                    MqttSubscribeModel mqttSubscribeModel = new MqttSubscribeModel();
-                    mqttSubscribeModel.setId(mqttMessage.getId());
-                    mqttSubscribeModel.setMessage(new String(mqttMessage.getPayload()));
-                    mqttSubscribeModel.setQos(mqttMessage.getQos());
-                    messages.add(mqttSubscribeModel);
-                    countDownLatch.countDown();
+                new IMqttMessageListener() {
+                    @Override
+                    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+                        MqttSubscribeModel mqttSubscribeModel = new MqttSubscribeModel();
+                        mqttSubscribeModel.setId(mqttMessage.getId());
+                        mqttSubscribeModel.setMessage(new String(mqttMessage.getPayload()));
+                        mqttSubscribeModel.setQos(mqttMessage.getQos());
+                        messages.add(mqttSubscribeModel);
+                        countDownLatch.countDown();
+                    }
                 });
 
         countDownLatch.await(waitMillis, TimeUnit.MILLISECONDS);
